@@ -12,9 +12,11 @@
 // ----------------------------------------------------------------------------
 // Client Creators
 // ----------------------------------------------------------------------------
+// NOTE: Only the browser client is exported here. The server client
+// (./server) uses `next/headers` and must be imported directly from
+// '@/utils/supabase/server' in Server Components / API routes only.
+// Same for the middleware client ('@/utils/supabase/middleware').
 export { createClient as createBrowserClient } from './client';
-export { createClient as createServerClient } from './server';
-export { createClient as createMiddlewareClient } from './middleware';
 
 // ----------------------------------------------------------------------------
 // All Database Types

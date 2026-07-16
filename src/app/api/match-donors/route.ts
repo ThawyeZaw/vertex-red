@@ -1,6 +1,6 @@
 // ============================================================================
 // Vertex Red — POST /api/match-donors
-// Proxy to Python FastAPI matching engine (AGENTS.md Rule 7)
+// Proxies to Python FastAPI matching engine (AGENTS.md Rule 7)
 // Thaw Ye Zaw — Backend / Database Domain
 // ============================================================================
 
@@ -8,26 +8,32 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
+const PYTHON_ENGINE_URL = process.env.MATCHING_ENGINE_URL || "http://localhost:8000";
+
 /**
  * Request body:
  * {
  *   requestId: string;
  *   bloodType: BloodType;
  *   location: { lat: number; lng: number };
+ *   urgency?: Urgency;  // defaults to STANDARD
  * }
  *
  * Response (200):
  * {
  *   donors: Array<{
  *     id: string;
- *     name: string;
- *     phone: string;
- *     bloodType: BloodType;
- *     distanceKm: number;
- *     township: string;
- *     lat: number;
- *     lng: number;
+ *     full_name: string;
+ *     phone: string | null;
+ *     blood_type: BloodType;
+ *     township: string | null;
+ *     distance_km: number;
+ *     compatibility_score: number;
+ *     lat: number | null;
+ *     lng: number | null;
  *   }>;
+ *   total_scored: number;
+ *   total_filtered: number;
  * }
  */
 export async function POST(request: Request) {
@@ -43,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { requestId, bloodType, location } = body;
+    const { requestId, bloodType, location, urgency = "STANDARD" } = body;
 
     if (!requestId || !bloodType || !location?.lat || !location?.lng) {
       return NextResponse.json(
@@ -52,30 +58,75 @@ export async function POST(request: Request) {
       );
     }
 
-    // TODO: Replace with actual Python FastAPI call when matching engine is built
-    // const pythonResponse = await fetch("http://localhost:8000/match", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ requestId, bloodType, location }),
-    // });
-    // const donors = await pythonResponse.json();
+    // Fetch all available donors with full medical data (server-side,
+    // not through public_profiles view, so we can access medical info
+    // needed by the scoring engine).
+    const { data: donors, error: fetchError } = await supabase
+      .from("profiles")
+      .select(
+        "id, full_name, phone, blood_type, township, lat, lng, last_donation_date, weight_kg, medical_conditions"
+      )
+      .eq("is_available", true)
+      .not("blood_type", "is", null);
 
-    // --- STUB: Fallback to basic distance-based query until Python engine is ready ---
-    const { data: donors, error } = await supabase.rpc("find_nearby_donors", {
-      p_lat: location.lat,
-      p_lng: location.lng,
-      p_blood_type: bloodType,
-      p_radius_km: 50,
-    });
-
-    if (error) {
+    if (fetchError) {
+      console.error("[match-donors] Failed to fetch donors:", fetchError);
       return NextResponse.json(
-        { donors: [], message: "Matching engine unavailable. Python service not yet deployed." },
+        { error: "Failed to fetch donor data" },
+        { status: 500 }
+      );
+    }
+
+    // ---- Try Python matching engine ----
+    try {
+      const pythonResponse = await fetch(`${PYTHON_ENGINE_URL}/match`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          request_id: requestId,
+          blood_type: bloodType,
+          location,
+          urgency,
+          donors: donors || [],
+        }),
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      if (pythonResponse.ok) {
+        const result = await pythonResponse.json();
+        return NextResponse.json(result);
+      }
+
+      console.warn(
+        "[match-donors] Python engine returned non-OK:",
+        pythonResponse.status
+      );
+    } catch (pythonErr) {
+      console.warn(
+        "[match-donors] Python engine unreachable, falling back to SQL:",
+        pythonErr
+      );
+    }
+
+    // ---- Fallback: basic distance + blood-type RPC ----
+    const { data: fallbackDonors, error: rpcError } = await supabase.rpc(
+      "find_nearby_donors",
+      {
+        p_lat: location.lat,
+        p_lng: location.lng,
+        p_blood_type: bloodType,
+        p_radius_km: urgency === "CRITICAL" ? 100 : urgency === "URGENT" ? 75 : 50,
+      }
+    );
+
+    if (rpcError) {
+      return NextResponse.json(
+        { donors: [], message: "Matching engine unavailable" },
         { status: 200 }
       );
     }
 
-    return NextResponse.json({ donors });
+    return NextResponse.json({ donors: fallbackDonors, total_scored: (fallbackDonors || []).length, total_filtered: 0 });
   } catch (err) {
     console.error("[match-donors] Error:", err);
     return NextResponse.json(
