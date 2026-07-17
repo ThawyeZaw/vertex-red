@@ -1,9 +1,11 @@
-// Landing page — role selector (Donor vs Hospital)
+// Public marketing landing page — unauthenticated layer (no operational data)
 // Thinzar Kyaw — Frontend Domain
+// STRICT: no live request feeds, maps, or donor contacts on this page.
 
-import Link from "next/link";
-import { Droplets, Building2, ArrowRight, Heart } from "lucide-react";
+import { RadioTower, HeartHandshake, Droplets, ShieldCheck, Building2 } from "lucide-react";
 import type { Metadata } from "next";
+import { Navbar } from "@/components/Navbar";
+import { HeroAuthButtons } from "@/components/HeroAuthButtons";
 
 export const metadata: Metadata = {
   title: "Vertex Red — Emergency Blood Donor Platform Myanmar",
@@ -11,115 +13,102 @@ export const metadata: Metadata = {
     "Real-time emergency platform connecting blood donors, hospitals, and urgent medical needs across Myanmar.",
 };
 
+const STATS = [
+  { value: "1,200+", label: "Donors Registered" },
+  { value: "202", label: "Partner Hospitals" },
+  { value: "24/7", label: "Emergency Coverage" },
+];
+
+const STEPS = [
+  {
+    icon: RadioTower,
+    title: "Hospitals broadcast",
+    desc: "Yangon General Hospital posts an urgent O+ request in seconds.",
+  },
+  {
+    icon: Droplets,
+    title: "Donors get matched",
+    desc: "Nearby donors like Ko Aung in Sanchaung are alerted instantly.",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Lives are saved",
+    desc: "Donors respond, donate, and track their impact in the Donor Passport.",
+  },
+];
+
+const TRUST_POINTS = [
+  { icon: ShieldCheck, text: "Verified hospital partners only" },
+  { icon: Building2, text: "From Asia Royal to Pun Hlaing Siloam" },
+  { icon: HeartHandshake, text: "Donor privacy protected until dispatch" },
+];
+
 export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col bg-gray-50">
-      {/* Hero header */}
-      <div className="bg-vr-navy px-6 pt-14 pb-10">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-vr-red shadow-lg">
-            <Droplets className="h-5 w-5 text-white" />
+      <Navbar />
+
+      {/* Hero */}
+      <section className="bg-vr-navy px-5 pb-12 pt-12 md:px-8 md:pb-20 md:pt-20">
+        <div className="mx-auto max-w-6xl">
+          <h1 className="text-3xl font-black leading-tight text-white md:text-5xl">
+            Every Drop Saves a Life<br />
+            <span className="text-emerald-400">in Myanmar.</span>
+          </h1>
+          <p className="mt-3 max-w-xs text-base leading-relaxed text-gray-400 md:max-w-md md:text-lg">
+            Real-time emergency blood coordination — connecting hospitals and donor heroes across Yangon and beyond.
+          </p>
+          <HeroAuthButtons />
+          <div className="mt-8 flex max-w-md gap-4">
+            {STATS.map((stat) => (
+              <div key={stat.label} className="flex-1 rounded-2xl bg-white/10 p-3 text-center">
+                <p className="text-lg font-black text-white">{stat.value}</p>
+                <p className="text-xs font-medium text-gray-400">{stat.label}</p>
+              </div>
+            ))}
           </div>
-          <span className="text-xl font-black text-white tracking-tight">
-            Vertex<span className="text-red-400">Red</span>
-          </span>
         </div>
-        <h1 className="text-3xl font-black text-white leading-tight">
-          Save lives.<br />
-          <span className="text-emerald-400">Right now.</span>
-        </h1>
-        <p className="mt-3 text-base text-gray-400 leading-relaxed max-w-xs">
-          Real-time emergency blood coordination across Myanmar — like Grab, for saving lives.
-        </p>
+      </section>
 
-        {/* Live stats */}
-        <div className="mt-6 flex gap-4">
-          {[
-            { value: "202", label: "Hospitals" },
-            { value: "1,400+", label: "Donors" },
-            { value: "24/7", label: "Live" },
-          ].map((stat) => (
-            <div key={stat.label} className="flex-1 rounded-2xl bg-white/10 p-3 text-center">
-              <p className="text-lg font-black text-white">{stat.value}</p>
-              <p className="text-xs text-gray-400 font-medium">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Role selector */}
-      <div className="flex-1 px-5 py-8 space-y-4">
-        <p className="text-sm font-semibold text-gray-500 text-center mb-6">
-          How are you using Vertex Red?
-        </p>
-
-        {/* Donor card */}
-        <Link
-          href="/passport"
-          id="role-donor"
-          className="group flex items-center justify-between rounded-3xl bg-white border-2 border-gray-100 p-5 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all"
-        >
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 group-hover:bg-emerald-200 transition-colors">
-              <Heart className="h-7 w-7 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-base font-bold text-vr-navy">I&apos;m a Donor</p>
-              <p className="text-sm text-gray-500 mt-0.5">
-                View passport, respond to dispatches
-              </p>
-            </div>
+      {/* How it works */}
+      <section className="px-5 py-10 md:px-8 md:py-14">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-center text-xl font-black text-vr-navy md:text-2xl">How it works</h2>
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {STEPS.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100">
+                  <Icon className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="mt-4 text-base font-bold text-vr-navy">{title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-gray-500">{desc}</p>
+              </div>
+            ))}
           </div>
-          <ArrowRight className="h-5 w-5 text-gray-300 group-hover:text-emerald-500 transition-colors" />
-        </Link>
-
-        {/* Hospital card */}
-        <Link
-          href="/command"
-          id="role-hospital"
-          className="group flex items-center justify-between rounded-3xl bg-white border-2 border-gray-100 p-5 shadow-sm hover:border-red-300 hover:shadow-md transition-all"
-        >
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 group-hover:bg-red-200 transition-colors">
-              <Building2 className="h-7 w-7 text-red-600" />
-            </div>
-            <div>
-              <p className="text-base font-bold text-vr-navy">I&apos;m a Hospital</p>
-              <p className="text-sm text-gray-500 mt-0.5">
-                Command center, broadcasts, inventory
-              </p>
-            </div>
-          </div>
-          <ArrowRight className="h-5 w-5 text-gray-300 group-hover:text-red-500 transition-colors" />
-        </Link>
-
-        {/* Hospital sub-links */}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <Link
-            href="/broadcast"
-            id="quick-broadcast"
-            className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-red-50 border border-red-100 py-4 px-3 text-center hover:bg-red-100 transition-colors"
-          >
-            <Droplets className="h-5 w-5 text-red-500" />
-            <span className="text-xs font-semibold text-red-700">New Broadcast</span>
-          </Link>
-          <Link
-            href="/inventory"
-            id="quick-inventory"
-            className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-100 py-4 px-3 text-center hover:bg-emerald-100 transition-colors"
-          >
-            <Building2 className="h-5 w-5 text-emerald-600" />
-            <span className="text-xs font-semibold text-emerald-700">Blood Inventory</span>
-          </Link>
         </div>
-      </div>
+      </section>
+
+      {/* Trust strip */}
+      <section className="flex-1 px-5 pb-12 md:px-8">
+        <div className="mx-auto max-w-6xl rounded-3xl bg-white p-6 shadow-sm md:p-8">
+          <h2 className="text-lg font-black text-vr-navy md:text-xl">Trusted across Yangon</h2>
+          <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            {TRUST_POINTS.map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-3 rounded-2xl bg-gray-50 p-4">
+                <Icon className="h-5 w-5 shrink-0 text-emerald-600" />
+                <p className="text-sm font-semibold text-gray-600">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <div className="px-6 pb-8 text-center">
+      <footer className="px-6 pb-8 text-center">
         <p className="text-xs text-gray-400">
-          Built with ❤️ for Myanmar · Vertex Red Hackathon 2026
+          Built with <Droplets className="inline h-3 w-3 text-red-500" /> for Myanmar · Vertex Red Hackathon 2026
         </p>
-      </div>
+      </footer>
     </main>
   );
 }
