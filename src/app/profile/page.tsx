@@ -29,7 +29,6 @@ import {
   Zap,
 } from "lucide-react";
 
-import { DonorTopBar } from "@/components/layout/DonorTopBar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { DonorPassportCard } from "@/components/passport/DonorPassportCard";
 import { EligibilitySection } from "@/components/passport/EligibilitySection";
@@ -219,11 +218,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#F4F6FA] pb-28 text-[#111827]">
-      <DonorTopBar
-        title="My Profile"
-        subtitle="Donor account and emergency readiness"
-      />
-
       {pageMode === "loading" ? (
         <ProfileLoadingState />
       ) : (

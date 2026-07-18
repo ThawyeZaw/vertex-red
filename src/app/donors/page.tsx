@@ -32,10 +32,13 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 
+<<<<<<< HEAD
 import { HospitalTopBar } from "@/components/layout/HospitalTopBar";
 import { BroadcastRadar } from "@/components/broadcast/BroadcastRadar";
 import { createClient } from "@/utils/supabase/client";
 
+=======
+>>>>>>> TZ
 type DonorAvailability = "AVAILABLE" | "RESPONDING" | "RESTING" | "OFFLINE";
 
 type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -378,12 +381,6 @@ export default function DonorsPage() {
 
   return (
     <div className="min-h-screen bg-[#F4F6FA] pb-24 text-[#111827] lg:pb-10">
-      <HospitalTopBar
-        title="Donor Network"
-        subtitle="Verified nearby blood donors"
-        isLive
-      />
-
       <main>
         <DonorNetworkHeader
           stats={stats}

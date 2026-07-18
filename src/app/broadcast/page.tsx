@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 
-import { HospitalTopBar } from "@/components/layout/HospitalTopBar";
 import { UrgencySelector } from "@/components/broadcast/UrgencySelector";
 import { BloodTypeGrid } from "@/components/broadcast/BloodTypeGrid";
 import { FacilitySelector } from "@/components/broadcast/FacilitySelector";
@@ -312,6 +311,7 @@ export default function BroadcastPage() {
 
   return (
     <div className="min-h-screen bg-[#F4F6FA] pb-28 text-[#111827] lg:pb-10">
+<<<<<<< HEAD
       <HospitalTopBar
         title="Emergency Broadcast"
         subtitle={
@@ -322,6 +322,8 @@ export default function BroadcastPage() {
         isLive
       />
 
+=======
+>>>>>>> TZ
       <main>
         <CompactHero
           currentStep={currentStep}
@@ -1278,12 +1280,6 @@ function BroadcastSuccess({
 }) {
   return (
     <div className="min-h-screen bg-[#F4F6FA] text-[#111827]">
-      <HospitalTopBar
-        title="Emergency Broadcast"
-        subtitle="Authorized hospital dispatch"
-        isLive
-      />
-
       <main className="flex min-h-[calc(100vh-88px)] items-center justify-center px-5 py-8">
         <section className="w-full max-w-lg overflow-hidden rounded-[2rem] border border-white bg-white shadow-[0_28px_80px_rgba(15,23,42,0.12)]">
           <div className="relative overflow-hidden bg-[#0D1933] px-6 py-8 text-center text-white">
