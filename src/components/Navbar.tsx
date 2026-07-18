@@ -3,9 +3,11 @@
 // Curved Floating Navigation Pill — site-wide bottom-positioned glassmorphism capsule
 // Detects all app routes (dashboard, passport, broadcast, inventory, map, command)
 // Public routes → nav links + "Login / Join" auth modal
-// App routes → dashboard links + Logout
+// App routes → dashboard links + Logout (hospital-only links hidden for donors)
 // No logo/heading — pure navigation pill
 // Thinzar Kyaw — Frontend Domain
+// ⚠️ CROSS-BOUNDARY: Uses demo-session cookie helpers from @/utils/session
+// (backend domain, Thaw Ye Zaw).
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -13,6 +15,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, UserCircle2, LogOut, LayoutDashboard } from "lucide-react";
 import { clsx } from "clsx";
 import { AuthModal } from "@/components/AuthModal";
+import {
+  clearDemoSessionCookie,
+  getDemoSessionRole,
+  matchesRoute,
+  HOSPITAL_ONLY_ROUTES,
+  type DemoRole,
+} from "@/utils/session";
 
 const PUBLIC_LINKS = [
   { href: "/about", label: "About" },
@@ -35,12 +44,25 @@ export const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const isApp = APP_ROUTES.some((route) => pathname?.startsWith(route)) ?? false;
-  const links = isApp ? DASHBOARD_LINKS : PUBLIC_LINKS;
 
+  const [role, setRole] = useState<DemoRole | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [visible, setVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Re-read role on navigation (cookie is set/cleared on login/logout)
+  useEffect(() => {
+    setRole(getDemoSessionRole());
+  }, [pathname]);
+
+  // Donors don't see hospital-only links (Broadcast, Inventory, Command)
+  const links = isApp
+    ? DASHBOARD_LINKS.filter(
+        (link) =>
+          role !== "donor" || !matchesRoute(link.href, HOSPITAL_ONLY_ROUTES)
+      )
+    : PUBLIC_LINKS;
 
   // Hide pill on scroll down, show on scroll up (saves vertical space)
   useEffect(() => {
@@ -58,10 +80,15 @@ export const Navbar = () => {
   }, [lastScrollY]);
 
   const handleLogout = () => {
+    clearDemoSessionCookie();
     window.sessionStorage.removeItem("vr-demo-session");
     window.localStorage.removeItem("vr-demo-session");
+    setRole(null);
     router.replace("/");
   };
+
+  // The dedicated /login page renders its own UI — no floating pill there
+  if (pathname === "/login") return null;
 
   return (
     <>

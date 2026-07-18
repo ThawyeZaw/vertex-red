@@ -2,16 +2,19 @@
 
 // AuthTabs — Sign In / Sign Up tabbed form UI
 // Thinzar Kyaw — Frontend Domain
-// NOTE: onSubmit handlers are intentionally empty — Supabase Auth wiring
-// belongs to the backend team (Thaw Ye Zaw).
+// ⚠️ CROSS-BOUNDARY: Calls Supabase Auth client defined in backend domain
+// (Thaw Ye Zaw). onSuccess callback allows parent to redirect/close modal.
 
 import { useEffect, useState, type FormEvent } from "react";
-import { Mail, Lock, User, Phone, ShieldCheck } from "lucide-react";
+import { Mail, Lock, User, Phone, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 import { clsx } from "clsx";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import { PasswordPolicy } from "@/components/PasswordPolicy";
 
 interface AuthTabsProps {
   prefill?: { email: string; password: string } | null;
+  onSuccess?: () => void;
 }
 
 type AuthMode = "signin" | "signup";
@@ -29,11 +32,14 @@ const Field = ({
   </div>
 );
 
-export const AuthTabs = ({ prefill = null }: AuthTabsProps) => {
+export const AuthTabs = ({ prefill = null, onSuccess }: AuthTabsProps) => {
   const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (prefill) {
@@ -43,16 +49,77 @@ export const AuthTabs = ({ prefill = null }: AuthTabsProps) => {
     }
   }, [prefill]);
 
-  const handleSignIn = (e: FormEvent<HTMLFormElement>) => {
+  // Clear error when switching tabs or editing fields
+  const clearError = () => { if (error) setError(null); };
+
+  const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO (Backend — Thaw Ye Zaw): wire up Supabase signInWithPassword
+    setError(null);
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (authError) {
+        setError(mapAuthError(authError.message));
+        return;
+      }
+      // Auth succeeded — Supabase sets sb-* cookies automatically.
+      // Notify parent to redirect / close the modal.
+      onSuccess?.();
+    } catch (err) {
+      setError("Unable to connect. Please check your internet connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignUp = (e: FormEvent<HTMLFormElement>) => {
+  const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO (Backend — Thaw Ye Zaw): wire up Supabase signUp
-    // Password policy validated client-side via PasswordPolicy.
-    // Backend MUST re-validate (12-char min, mixed types, breach check).
+    setError(null);
+    setLoading(true);
+    try {
+      const form = e.currentTarget;
+      const fullName = (form.elements.namedItem("fullName") as HTMLInputElement)?.value;
+      const phone = (form.elements.namedItem("phone") as HTMLInputElement)?.value;
+      const emailValue = (form.elements.namedItem("email") as HTMLInputElement)?.value;
+      const passwordValue = (form.elements.namedItem("password") as HTMLInputElement)?.value;
+
+      const supabase = createClient();
+      const { error: authError } = await supabase.auth.signUp({
+        email: emailValue,
+        password: passwordValue,
+        options: {
+          data: { full_name: fullName, phone },
+        },
+      });
+      if (authError) {
+        setError(mapAuthError(authError.message));
+        return;
+      }
+      // Sign up succeeded — notify parent
+      onSuccess?.();
+    } catch (err) {
+      setError("Unable to connect. Please check your internet connection and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mapAuthError = (message: string): string => {
+    const lower = message.toLowerCase();
+    if (lower.includes("invalid login credentials") || lower.includes("invalid email")) {
+      return "Invalid email or password. Please check your credentials and try again.";
+    }
+    if (lower.includes("email not confirmed")) {
+      return "Please verify your email address before signing in. Check your inbox for a confirmation link.";
+    }
+    if (lower.includes("too many requests") || lower.includes("rate limit")) {
+      return "Too many sign-in attempts. Please wait a moment and try again.";
+    }
+    return message;
   };
 
   return (
@@ -69,7 +136,7 @@ export const AuthTabs = ({ prefill = null }: AuthTabsProps) => {
             type="button"
             role="tab"
             aria-selected={mode === tab.key}
-            onClick={() => setMode(tab.key)}
+            onClick={() => { setMode(tab.key); clearError(); }}
             className={clsx(
               "min-h-[44px] rounded-xl text-base font-semibold transition-all",
               mode === tab.key
@@ -82,15 +149,23 @@ export const AuthTabs = ({ prefill = null }: AuthTabsProps) => {
         ))}
       </div>
 
+      {/* Error banner */}
+      {error && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
       {mode === "signin" ? (
-        <form onSubmit={handleSignIn} className="space-y-4">
+        <form key="signin" onSubmit={handleSignIn} className="space-y-4">
           <Field
             icon={Mail}
             type="email"
             name="email"
             placeholder="Email address"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => { setEmail(e.target.value); clearError(); }}
             required
           />
           <Field
@@ -99,28 +174,36 @@ export const AuthTabs = ({ prefill = null }: AuthTabsProps) => {
             name="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { setPassword(e.target.value); clearError(); }}
             required
           />
           <button
             type="submit"
-            className="w-full min-h-[48px] rounded-xl bg-red-600 py-3 text-base font-bold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            disabled={loading}
+            className="flex w-full min-h-[48px] items-center justify-center gap-2 rounded-xl bg-red-600 py-3 text-base font-bold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Sign In
+            {loading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Signing in…
+              </>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
       ) : (
-        <form onSubmit={handleSignUp} className="space-y-4">
-          <Field icon={User} type="text" name="fullName" placeholder="Full name (e.g., Ko Aung)" required />
-          <Field icon={Phone} type="tel" name="phone" placeholder="Phone (e.g., 09 7XX XXX XXX)" required />
-          <Field icon={Mail} type="email" name="email" placeholder="Email address" required />
+        <form key="signup" onSubmit={handleSignUp} className="space-y-4">
+          <Field icon={User} type="text" name="fullName" placeholder="Full name (e.g., Ko Aung)" required onChange={clearError} />
+          <Field icon={Phone} type="tel" name="phone" placeholder="Phone (e.g., 09 7XX XXX XXX)" required onChange={clearError} />
+          <Field icon={Mail} type="email" name="email" placeholder="Email address" required onChange={clearError} />
           <Field
             icon={Lock}
             type="password"
             name="password"
             placeholder="Create a password"
             value={signUpPassword}
-            onChange={(e) => setSignUpPassword(e.target.value)}
+            onChange={(e) => { setSignUpPassword(e.target.value); clearError(); }}
             required
           />
           <PasswordPolicy password={signUpPassword} />
@@ -141,9 +224,17 @@ export const AuthTabs = ({ prefill = null }: AuthTabsProps) => {
 
           <button
             type="submit"
-            className="w-full min-h-[48px] rounded-xl bg-red-600 py-3 text-base font-bold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            disabled={loading}
+            className="flex w-full min-h-[48px] items-center justify-center gap-2 rounded-xl bg-red-600 py-3 text-base font-bold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Create Account
+            {loading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Creating account…
+              </>
+            ) : (
+              "Create Account"
+            )}
           </button>
           <p className="text-center text-xs leading-relaxed text-gray-400">
             By joining, you agree to be contacted for emergency blood requests near you.
