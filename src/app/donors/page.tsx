@@ -4,7 +4,7 @@
 // LifeLink — Hospital Donor Network
 // Team Vertex Red
 
-import { useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import {
   Activity,
   AlertCircle,
@@ -33,6 +33,8 @@ import {
 import { clsx } from "clsx";
 
 import { HospitalTopBar } from "@/components/layout/HospitalTopBar";
+import { BroadcastRadar } from "@/components/broadcast/BroadcastRadar";
+import { createClient } from "@/utils/supabase/client";
 
 type DonorAvailability = "AVAILABLE" | "RESPONDING" | "RESTING" | "OFFLINE";
 
@@ -217,6 +219,49 @@ export default function DonorsPage() {
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_DONORS);
   const [mobileView, setMobileView] = useState<MobileView>("DONORS");
 
+  // Radar state for reverse broadcast
+  const [showRadar, setShowRadar] = useState(false);
+  const [radarBloodType, setRadarBloodType] = useState<BloodType>("O+");
+  // Township centroid of the logged-in user (privacy-safe; never exact GPS).
+  // Defaults to downtown Yangon until the profile township is resolved.
+  const [radarCenter, setRadarCenter] = useState({ lat: 16.8409, lng: 96.1735 });
+
+  useEffect(() => {
+    const loadMyDonorContext = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("blood_type, township")
+          .eq("id", user.id)
+          .single();
+
+        if (profile?.blood_type) {
+          setRadarBloodType(profile.blood_type as BloodType);
+        }
+        if (profile?.township) {
+          const { data: township } = await supabase
+            .from("townships")
+            .select("lat, lng")
+            .ilike("name", profile.township.trim())
+            .maybeSingle();
+          if (township) {
+            setRadarCenter({ lat: township.lat, lng: township.lng });
+          }
+        }
+      } catch (error) {
+        console.error("Unable to load donor context:", error);
+      }
+    };
+
+    void loadMyDonorContext();
+  }, []);
+
   const stats = useMemo(() => {
     const available = donors.filter(
       (donor) => donor.availability === "AVAILABLE",
@@ -318,6 +363,19 @@ export default function DonorsPage() {
     setVisibleCount(INITIAL_VISIBLE_DONORS);
   };
 
+  if (showRadar) {
+    return (
+      <BroadcastRadar
+        centerLat={radarCenter.lat}
+        centerLng={radarCenter.lng}
+        mode="hospital"
+        bloodTypes={[radarBloodType]}
+        entityId=""
+        onClose={() => setShowRadar(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F4F6FA] pb-24 text-[#111827] lg:pb-10">
       <HospitalTopBar
@@ -336,6 +394,9 @@ export default function DonorsPage() {
             }));
             setMobileView("DONORS");
           }}
+          onFindHospitals={() => setShowRadar(true)}
+          radarBloodType={radarBloodType}
+          onRadarBloodTypeChange={setRadarBloodType}
         />
 
         <MobileViewTabs
@@ -433,6 +494,9 @@ export default function DonorsPage() {
 function DonorNetworkHeader({
   stats,
   onAvailable,
+  onFindHospitals,
+  radarBloodType,
+  onRadarBloodTypeChange,
 }: {
   stats: {
     total: number;
@@ -442,6 +506,9 @@ function DonorNetworkHeader({
     averageDistance: number;
   };
   onAvailable: () => void;
+  onFindHospitals: () => void;
+  radarBloodType: BloodType;
+  onRadarBloodTypeChange: (bloodType: BloodType) => void;
 }) {
   return (
     <section className="relative overflow-hidden bg-[#0D1933]">
@@ -474,14 +541,37 @@ function DonorNetworkHeader({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onAvailable}
-            className="hidden h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-4 text-xs font-black text-[#05291F] shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-300 sm:inline-flex"
-          >
-            <Zap className="h-4 w-4" />
-            Available now
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onAvailable}
+              className="hidden h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-4 text-xs font-black text-[#05291F] shadow-lg shadow-emerald-950/20 transition hover:bg-emerald-300 sm:inline-flex"
+            >
+              <Zap className="h-4 w-4" />
+              Available now
+            </button>
+
+            <select
+              value={radarBloodType}
+              onChange={(e) => onRadarBloodTypeChange(e.target.value as BloodType)}
+              className="h-9 rounded-xl border border-white/10 bg-white/[0.08] px-2 text-xs font-bold text-white outline-none"
+            >
+              {BLOOD_TYPES.filter((bt) => bt !== "ALL").map((bt) => (
+                <option key={bt} value={bt} className="bg-[#0D1933]">
+                  {bt}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={onFindHospitals}
+              className="hidden h-11 items-center justify-center gap-2 rounded-2xl bg-red-400 px-4 text-xs font-black text-[#3B0A0A] shadow-lg shadow-red-950/20 transition hover:bg-red-300 sm:inline-flex"
+            >
+              <Radio className="h-4 w-4" />
+              Find Hospitals
+            </button>
+          </div>
         </div>
 
         <div className="mt-5 grid grid-cols-4 gap-2 sm:gap-3">

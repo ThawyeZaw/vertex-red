@@ -1,17 +1,40 @@
 // ============================================================================
-// LifeLink — Root Middleware (Supabase Auth Session Refresh)
-// Thaw Ye Zaw — Backend / Database Domain
+// LifeLink — Root Middleware (Supabase session refresh + action gating)
+// Public pages (landing, map, inventory, auth) stay anonymous; action
+// pages require login and redirect back after signing in.
 // ============================================================================
 
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/middleware";
 
+// Route prefixes that require a logged-in user
+const PROTECTED_PREFIXES = [
+  "/broadcast",
+  "/command",
+  "/donors",
+  "/profile",
+  "/org",
+];
+
 export async function middleware(request: NextRequest) {
   const { supabase, supabaseResponse } = createClient(request);
 
   // Refresh the auth session cookie on every request
-  // This keeps the user's session alive across page navigations
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+
+  if (isProtected && !user) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.search = `?redirect=${encodeURIComponent(pathname + request.nextUrl.search)}`;
+    return NextResponse.redirect(loginUrl);
+  }
 
   return supabaseResponse;
 }

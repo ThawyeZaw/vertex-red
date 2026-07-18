@@ -35,10 +35,12 @@ import { DonorPassportCard } from "@/components/passport/DonorPassportCard";
 import { EligibilitySection } from "@/components/passport/EligibilitySection";
 import { ActiveDispatchCard } from "@/components/passport/ActiveDispatchCard";
 import { DonationHistorySection } from "@/components/passport/DonationHistorySection";
+import { ProfileSettingsCard } from "@/components/passport/ProfileSettingsCard";
 
 import {
   getMyMatches,
   getMyProfile,
+  updateMatchStatus,
   type Profile,
   type RequestWithDetails,
 } from "@/utils/supabase";
@@ -55,6 +57,7 @@ type ProfileSection = "overview" | "eligibility" | "history";
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [dispatch, setDispatch] = useState<RequestWithDetails | null>(null);
+  const [dispatchMatchId, setDispatchMatchId] = useState<string | null>(null);
   const [donationCount, setDonationCount] = useState(14);
   const [pageMode, setPageMode] = useState<PageMode>("loading");
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -94,6 +97,7 @@ export default function ProfilePage() {
       );
 
       if (urgentMatch) {
+        setDispatchMatchId(urgentMatch.id);
         setDispatch({
           id: urgentMatch.request.id,
           requester_id: "",
@@ -120,6 +124,7 @@ export default function ProfilePage() {
         });
       } else {
         setDispatch(null);
+        setDispatchMatchId(null);
       }
 
       setPageMode("live");
@@ -199,9 +204,14 @@ export default function ProfilePage() {
     setIsResponding(true);
 
     try {
-      // Replace this delay with your Supabase response mutation.
-      await new Promise((resolve) => setTimeout(resolve, 700));
+      // Donor-accepts-first: accepting the match reveals the donor's
+      // contact info to the requester (enforced by database policies).
+      if (dispatchMatchId) {
+        await updateMatchStatus(dispatchMatchId, "ACCEPTED");
+      }
       setHasResponded(true);
+    } catch (error) {
+      console.error("Unable to accept the match:", error);
     } finally {
       setIsResponding(false);
     }
@@ -371,6 +381,21 @@ export default function ProfilePage() {
               ) : (
                 <EmptyDispatchState />
               )}
+            </section>
+
+            <section aria-labelledby="settings-title">
+              <SectionTitle
+                eyebrow="Matching preferences"
+                title="Donor settings"
+                description="Keep your blood type, township, and availability up to date."
+              />
+
+              <div className="mt-4">
+                <ProfileSettingsCard
+                  profile={displayProfile}
+                  onSaved={(updated) => setProfile(updated)}
+                />
+              </div>
             </section>
 
             <section aria-labelledby="impact-title">

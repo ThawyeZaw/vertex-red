@@ -35,6 +35,7 @@ import { HospitalTopBar } from "@/components/layout/HospitalTopBar";
 import { UrgencySelector } from "@/components/broadcast/UrgencySelector";
 import { BloodTypeGrid } from "@/components/broadcast/BloodTypeGrid";
 import { FacilitySelector } from "@/components/broadcast/FacilitySelector";
+import { BroadcastRadar } from "@/components/broadcast/BroadcastRadar";
 
 import {
   getApprovedHospitals,
@@ -42,10 +43,12 @@ import {
   type Hospital,
   type Urgency,
 } from "@/utils/supabase";
+import { createClient } from "@/utils/supabase/client";
+import type { Organization } from "@/utils/supabase/types";
 
 import { MOCK_HOSPITALS } from "@/components/data/mockData";
 
-type BroadcastState = "idle" | "loading" | "success";
+type BroadcastState = "idle" | "loading" | "radar" | "success";
 type HospitalDataMode = "loading" | "live" | "demo";
 type StepNumber = 1 | 2 | 3 | 4;
 
@@ -104,6 +107,8 @@ export default function BroadcastPage() {
   const [broadcastState, setBroadcastState] = useState<BroadcastState>("idle");
   const [errors, setErrors] = useState<FormErrors>({});
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [broadcastRequestIds, setBroadcastRequestIds] = useState<string[]>([]);
+  const [myOrganization, setMyOrganization] = useState<Organization | null>(null);
 
   useEffect(() => {
     const loadHospitals = async () => {
@@ -120,7 +125,40 @@ export default function BroadcastPage() {
       }
     };
 
+    // Broadcast as organisation when the user belongs to one
+    const loadMyOrganization = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: membership } = await supabase
+          .from("organization_members")
+          .select("org_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (!membership) return;
+
+        const { data: org } = await supabase
+          .from("organizations")
+          .select(
+            "id, name, org_type, township, address, phone, is_verified, owner_id, hospital_id, created_at, updated_at"
+          )
+          .eq("id", membership.org_id)
+          .single();
+
+        if (org) setMyOrganization(org as Organization);
+      } catch (error) {
+        console.error("Unable to load organisation membership:", error);
+      }
+    };
+
     void loadHospitals();
+    void loadMyOrganization();
   }, []);
 
   const selectedFacility = useMemo(
@@ -202,24 +240,35 @@ export default function BroadcastPage() {
             unitsNeeded,
             urgency,
             hospitalId: facilityId,
+            organizationId: myOrganization?.id || null,
             notes: notes.trim() || null,
           }),
+        }).then(async (res) => {
+          if (!res.ok) throw new Error("Request failed");
+          const data = await res.json();
+          return data.id || data.request?.id || "";
         }),
       );
 
-      const responses = await Promise.all(requests);
+      const ids = await Promise.all(requests);
+      const validIds = ids.filter(Boolean);
 
-      if (responses.some((response) => !response.ok)) {
-        throw new Error("One or more broadcast requests failed.");
+      if (validIds.length === 0) {
+        throw new Error("No requests were created successfully.");
       }
 
-      setBroadcastState("success");
+      setBroadcastRequestIds(validIds);
+      setBroadcastState("radar");
     } catch (error) {
       console.error("Unable to broadcast request:", error);
 
       // Prototype fallback
-      setBroadcastState("success");
+      setBroadcastState("radar");
     }
+  };
+
+  const handleRadarClose = () => {
+    setBroadcastState("success");
   };
 
   const resetBroadcast = () => {
@@ -230,8 +279,24 @@ export default function BroadcastPage() {
     setUnitsNeeded(1);
     setNotes("");
     setErrors({});
+    setBroadcastRequestIds([]);
     setBroadcastState("idle");
   };
+
+  if (broadcastState === "radar" && selectedFacility) {
+    return (
+      <BroadcastRadar
+        centerLat={selectedFacility.lat}
+        centerLng={selectedFacility.lng}
+        mode="donor"
+        bloodTypes={selectedBloodTypes}
+        entityId={broadcastRequestIds[0] || ""}
+        township={selectedFacility.township}
+        urgency={urgency}
+        onClose={handleRadarClose}
+      />
+    );
+  }
 
   if (broadcastState === "success") {
     return (
@@ -249,7 +314,11 @@ export default function BroadcastPage() {
     <div className="min-h-screen bg-[#F4F6FA] pb-28 text-[#111827] lg:pb-10">
       <HospitalTopBar
         title="Emergency Broadcast"
-        subtitle="Authorized hospital dispatch"
+        subtitle={
+          myOrganization
+            ? `Broadcasting as ${myOrganization.name}${myOrganization.is_verified ? " ✓" : ""}`
+            : "Authorized hospital dispatch"
+        }
         isLive
       />
 

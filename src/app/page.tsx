@@ -4,6 +4,8 @@
 
 import Link from "next/link";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
 import {
   Activity,
   ArrowRight,
@@ -14,10 +16,13 @@ import {
   Droplets,
   Heart,
   Hospital,
+  LogIn,
+  LogOut,
   MapPin,
   Radio,
   ShieldCheck,
   Sparkles,
+  UserCircle2,
   Users,
 } from "lucide-react";
 
@@ -66,7 +71,24 @@ const trustItems = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = createClient(await cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let displayName: string | null = null;
+  let isOrganisation = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, account_type")
+      .eq("id", user.id)
+      .single();
+    displayName = profile?.full_name || user.email || "Account";
+    isOrganisation = profile?.account_type === "organisation";
+  }
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#F7F8FC] text-[#162033]">
       <section className="relative isolate overflow-hidden bg-[#101B35]">
@@ -107,12 +129,43 @@ export default function HomePage() {
               </div>
             </Link>
 
-            <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-300 backdrop-blur sm:flex">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
-              </span>
-              Emergency network online
+            <div className="flex items-center gap-3">
+              <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-300 backdrop-blur lg:flex">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                </span>
+                Emergency network online
+              </div>
+
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={isOrganisation ? "/org" : "/profile"}
+                    className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white backdrop-blur transition hover:bg-white/10"
+                  >
+                    <UserCircle2 className="h-4 w-4 text-emerald-400" />
+                    <span className="max-w-[10rem] truncate">{displayName}</span>
+                  </Link>
+                  <form action="/auth/signout" method="POST">
+                    <button
+                      type="submit"
+                      aria-label="Sign out"
+                      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 backdrop-blur transition hover:bg-white/10 hover:text-white"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center gap-2 rounded-full bg-red-500 px-5 py-2.5 text-xs font-bold text-white shadow-[0_10px_30px_rgba(239,68,68,0.3)] transition hover:bg-red-400"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Sign in
+                </Link>
+              )}
             </div>
           </nav>
 
