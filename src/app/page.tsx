@@ -1,7 +1,7 @@
 // src/app/page.tsx
 // LifeLink — Emergency Blood Network
 // Team Vertex Red
-
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -69,232 +69,224 @@ const trustItems = [
 export default function HomePage() {
   return (
     <main className="min-h-screen overflow-hidden bg-[#F7F8FC] text-[#162033]">
-      <section className="relative isolate overflow-hidden bg-[#101B35]">
+      <section className="relative isolate overflow-hidden bg-[#0D1933]">
+        {/* Background */}
         <div aria-hidden="true" className="absolute inset-0 -z-10">
-          <div className="absolute -left-24 top-12 h-72 w-72 rounded-full bg-red-600/20 blur-3xl" />
-          <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-emerald-400/10 blur-3xl" />
-          <div className="absolute bottom-0 left-1/2 h-48 w-[36rem] -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl" />
+          <div className="absolute -left-40 top-0 h-[30rem] w-[30rem] rounded-full bg-red-500/15 blur-[140px]" />
+
+          <div className="absolute -right-32 top-16 h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-[140px]" />
+
+          <div className="absolute bottom-[-8rem] left-1/2 h-80 w-[50rem] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[130px]" />
 
           <div
-            className="absolute inset-0 opacity-[0.055]"
+            className="absolute inset-0 opacity-[0.035]"
             style={{
               backgroundImage:
                 "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
-              backgroundSize: "44px 44px",
+              backgroundSize: "48px 48px",
             }}
           />
+
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-[#0D1933] via-[#0D1933]/70 to-transparent" />
         </div>
 
-        <div className="mx-auto max-w-7xl px-5 pb-16 pt-6 sm:px-8 lg:px-10 lg:pb-24">
-          <nav className="flex items-center justify-between">
-            <Link
-              href="/"
-              className="flex items-center gap-3"
-              aria-label="LifeLink home"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-500 shadow-[0_10px_35px_rgba(239,68,68,0.35)]">
-                <Droplets className="h-6 w-6 text-white" />
+        <div className="mx-auto max-w-7xl px-5 pb-12 pt-12 sm:px-8 sm:pb-16 sm:pt-16 lg:px-10 lg:pb-20 lg:pt-20">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:gap-16">
+            {/* Left content */}
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.07] px-3.5 py-2 shadow-sm backdrop-blur-xl">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                </span>
+
+                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-200 sm:text-[11px]">
+                  Emergency blood network online
+                </span>
               </div>
 
-              <div>
-                <p className="text-xl font-black tracking-tight text-white">
-                  Life<span className="text-red-400">Link</span>
-                </p>
-
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
-                  by Team Vertex Red
-                </p>
-              </div>
-            </Link>
-
-            <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-300 backdrop-blur sm:flex">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
-              </span>
-              Emergency network online
-            </div>
-          </nav>
-
-          <div className="grid items-center gap-12 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:pt-20">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-red-400/20 bg-red-400/10 px-3.5 py-2 text-xs font-bold text-red-200 backdrop-blur">
-                <Sparkles className="h-3.5 w-3.5" />
-                Myanmar&apos;s emergency blood response network
-              </div>
-
-              <h1 className="mt-6 max-w-3xl text-4xl font-black leading-[1.06] tracking-[-0.04em] text-white sm:text-5xl lg:text-7xl">
-                Every second counts.
-                <br />
-                <span className="bg-gradient-to-r from-red-400 via-red-300 to-orange-300 bg-clip-text text-transparent">
-                  Every match saves a life.
+              <h1 className="mt-6 max-w-4xl text-4xl font-black leading-[1.04] tracking-[-0.045em] text-white sm:text-5xl lg:text-[4.3rem]">
+                The right donor.
+                <span className="block bg-gradient-to-r from-red-400 via-red-300 to-orange-300 bg-clip-text text-transparent">
+                  When every second matters.
                 </span>
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-                LifeLink connects verified hospitals, patients, and compatible
+                LifeLink connects verified hospitals with compatible nearby
                 blood donors in real time, helping urgent requests reach the
                 right people faster.
               </p>
 
+              {/* Actions */}
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href="/command"
-                  className="group inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-red-500 px-6 text-sm font-bold text-white shadow-[0_18px_40px_rgba(239,68,68,0.3)] transition hover:-translate-y-0.5 hover:bg-red-400"
+                  href="/broadcast"
+                  className="group inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-red-500 px-6 text-sm font-black text-white shadow-[0_18px_45px_rgba(239,68,68,0.28)] transition duration-300 hover:-translate-y-0.5 hover:bg-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D1933]"
                 >
-                  Request Blood
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <BellRing className="h-4 w-4" />
+                  Create emergency request
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
 
                 <Link
                   href="/profile"
-                  className="group inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-6 text-sm font-bold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
+                  className="group inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/[0.08] px-6 text-sm font-black text-white backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.13] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D1933]"
                 >
-                  <Heart className="h-4 w-4 text-emerald-400" />
-                  Become a Donor
+                  <Heart className="h-4 w-4 text-emerald-300" />
+                  Join as a donor
                 </Link>
               </div>
 
-              <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs font-medium text-slate-400">
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  Verified hospital requests
-                </span>
+              {/* Trust points */}
+              <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3 backdrop-blur-xl transition hover:bg-white/[0.08]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                  </div>
 
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  Privacy-first matching
-                </span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-white">Verified</p>
+                    <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                      Hospital requests
+                    </p>
+                  </div>
+                </div>
 
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  Available 24/7
-                </span>
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3 backdrop-blur-xl transition hover:bg-white/[0.08]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
+                    <Users className="h-4 w-4 text-emerald-300" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-white">Nearby</p>
+                    <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                      Compatible donors
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-3 backdrop-blur-xl transition hover:bg-white/[0.08]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-400/10">
+                    <Activity className="h-4 w-4 text-emerald-300" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-white">Real time</p>
+                    <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                      Live donor response
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="relative mx-auto w-full max-w-xl">
-              <div className="absolute -inset-5 rounded-[2.5rem] bg-gradient-to-br from-red-500/20 to-emerald-400/10 blur-2xl" />
+            {/* Right visual */}
+            <div className="relative mx-auto flex w-full max-w-[560px] items-center justify-center">
+              <div
+                aria-hidden="true"
+                className="absolute h-[78%] w-[78%] rounded-full bg-red-500/20 blur-[85px]"
+              />
 
-              <article className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white p-5 shadow-2xl sm:p-7">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-red-600">
-                      <BellRing className="h-3.5 w-3.5" />
-                      Critical request
-                    </div>
+              <div className="relative w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_35px_100px_rgba(0,0,0,0.32)] backdrop-blur-2xl sm:p-7">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-red-500/[0.06]" />
 
-                    <h2 className="mt-4 text-xl font-black tracking-tight text-[#101B35] sm:text-2xl">
-                      O− blood needed urgently
-                    </h2>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      Yangon General Hospital
-                    </p>
-                  </div>
-
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-red-500 text-xl font-black text-white shadow-lg shadow-red-200">
-                    O−
-                  </div>
-                </div>
-
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-xs font-semibold text-slate-400">
-                      Required
-                    </p>
-
-                    <p className="mt-1 text-base font-black text-[#101B35]">
-                      2 units
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl bg-slate-50 p-4">
-                    <p className="text-xs font-semibold text-slate-400">
-                      Needed within
-                    </p>
-
-                    <p className="mt-1 text-base font-black text-red-600">
-                      90 minutes
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                <div className="relative flex min-h-[420px] flex-col justify-between sm:min-h-[500px]">
+                  {/* Card top */}
                   <div className="flex items-center justify-between gap-4">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#0D1933]/60 px-3 py-2 backdrop-blur-xl">
+                      <span className="h-2 w-2 rounded-full bg-red-400" />
+
+                      <span className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-200">
+                        LifeLink response system
+                      </span>
+                    </div>
+
+                    <div className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1.5">
+                      <span className="text-[9px] font-black uppercase tracking-[0.1em] text-emerald-300">
+                        Active
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Symbol */}
+                  <div className="relative mx-auto my-6 flex w-full max-w-[330px] items-center justify-center">
+                    <div className="absolute h-64 w-64 rounded-full bg-red-500/20 blur-3xl" />
+
+                    <Image
+                      src="/images/logo.png"
+                      alt="LifeLink blood safety symbol"
+                      width={500}
+                      height={500}
+                      priority
+                      className="relative h-auto w-full object-contain drop-shadow-[0_25px_45px_rgba(239,68,68,0.28)]"
+                    />
+                  </div>
+
+                  {/* Response status */}
+                  <div className="rounded-[1.35rem] border border-white/10 bg-[#0D1933]/70 p-4 backdrop-blur-xl">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white">
-                        <Users className="h-5 w-5" />
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/10">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-300" />
                       </div>
 
-                      <div>
-                        <p className="text-sm font-black text-emerald-950">
-                          8 compatible donors nearby
-                        </p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-black text-white">
+                            Smart donor matching
+                          </p>
 
-                        <p className="text-xs text-emerald-700">
-                          Closest eligible donor is 1.8 km away
+                          <Activity className="h-4 w-4 shrink-0 text-emerald-300" />
+                        </div>
+
+                        <p className="mt-1 text-xs leading-5 text-slate-400">
+                          Matching hospitals with eligible donors by blood type,
+                          distance, and availability.
                         </p>
                       </div>
                     </div>
-
-                    <Activity className="h-5 w-5 shrink-0 text-emerald-600" />
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-5 flex items-center gap-3">
-                  <Link
-                    href="/broadcast"
-                    className="group flex min-h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#101B35] px-4 text-sm font-bold text-white transition hover:bg-[#18294f]"
-                  >
-                    Dispatch donors
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-
-                  <Link
-                    href="/inventory"
-                    aria-label="Open blood inventory"
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500"
-                  >
-                    <Droplets className="h-5 w-5" />
-                  </Link>
-                </div>
-              </article>
-
-              <div className="absolute -bottom-5 -left-3 hidden items-center gap-3 rounded-2xl border border-white/10 bg-[#172541] px-4 py-3 text-white shadow-xl sm:flex">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/15">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+              {/* Floating badge */}
+              <div className="absolute -bottom-4 left-4 hidden items-center gap-3 rounded-2xl border border-white/10 bg-[#172541] px-4 py-3 text-white shadow-[0_18px_45px_rgba(0,0,0,0.28)] sm:flex">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-400/15">
+                  <Heart className="h-4 w-4 fill-red-400 text-red-400" />
                 </div>
 
                 <div>
-                  <p className="text-xs font-bold">Match confirmed</p>
-                  <p className="text-[10px] text-slate-400">
-                    Donor responding now
+                  <p className="text-xs font-black">Built to save lives</p>
+                  <p className="mt-0.5 text-[9px] text-slate-400">
+                    Fast, verified and coordinated
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-14 grid grid-cols-3 divide-x divide-white/10 rounded-[1.75rem] border border-white/10 bg-white/5 p-3 backdrop-blur sm:p-5 lg:mt-20">
-            {stats.map((stat) => {
+          {/* Stats */}
+          <div className="mt-14 grid grid-cols-3 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.055] backdrop-blur-xl lg:mt-20">
+            {stats.map((stat, index) => {
               const Icon = stat.icon;
 
               return (
                 <div
                   key={stat.label}
-                  className="flex flex-col items-center justify-center px-2 py-3 text-center sm:flex-row sm:gap-3"
+                  className={`flex min-w-0 flex-col items-center justify-center px-2 py-4 text-center sm:flex-row sm:gap-3 sm:px-5 sm:py-5 ${
+                    index > 0 ? "border-l border-white/10" : ""
+                  }`}
                 >
-                  <div className="hidden h-10 w-10 items-center justify-center rounded-xl bg-white/10 sm:flex">
+                  <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.08] sm:flex">
                     <Icon className="h-5 w-5 text-red-300" />
                   </div>
 
-                  <div className="sm:text-left">
-                    <p className="text-base font-black text-white sm:text-xl">
+                  <div className="min-w-0 sm:text-left">
+                    <p className="truncate text-base font-black text-white sm:text-xl">
                       {stat.value}
                     </p>
 
-                    <p className="mt-0.5 text-[10px] font-medium text-slate-400 sm:text-xs">
+                    <p className="mt-0.5 truncate text-[8px] font-semibold text-slate-400 sm:text-[11px]">
                       {stat.label}
                     </p>
                   </div>
@@ -304,7 +296,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       <section className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-red-500">

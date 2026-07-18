@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 
-import { HospitalTopBar } from "@/components/layout/HospitalTopBar";
 import { BloodStockRow } from "@/components/inventory/BloodStockRow";
 import {
   MOCK_BLOOD_INVENTORY,
@@ -131,12 +130,6 @@ export default function InventoryPage() {
 
   return (
     <div className="min-h-screen bg-[#F4F6FA] pb-10 text-[#111827]">
-      <HospitalTopBar
-        title="Blood Inventory"
-        subtitle={`${HOSPITAL_NAME.toUpperCase()} · ${HOSPITAL_SHORT_NAME}`}
-        isLive
-      />
-
       <main>
         <section className="relative overflow-hidden bg-[#0D1933] px-5 pb-8 pt-5">
           <div aria-hidden="true" className="absolute inset-0">

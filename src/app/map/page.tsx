@@ -3,20 +3,18 @@
 
 import Link from "next/link";
 import { MapPin, ArrowLeft } from "lucide-react";
-import { DonorTopBar } from "@/components/layout/DonorTopBar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Donation Map — LifeLink",
-  description: "Find nearby blood donation centers and active requests across Myanmar.",
+  description:
+    "Find nearby blood donation centers and active requests across Myanmar.",
 };
 
 export default function MapPage() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 pb-24">
-      <DonorTopBar title="Donation Map" subtitle="Find nearby ways to give" />
-
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
         <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-emerald-100">
           <MapPin className="h-12 w-12 text-vr-teal" />
@@ -25,8 +23,8 @@ export default function MapPage() {
           Interactive Map
         </h2>
         <p className="mt-2 text-sm text-gray-500 text-center max-w-xs leading-relaxed">
-          The Mapbox-powered donation map is coming soon. It will show donor locations,
-          hospital pins, and urgent request zones across Myanmar.
+          The Mapbox-powered donation map is coming soon. It will show donor
+          locations, hospital pins, and urgent request zones across Myanmar.
         </p>
 
         <div className="mt-8 w-full max-w-xs space-y-3">
